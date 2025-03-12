@@ -1,4 +1,6 @@
 package org.example;
+import strings.Tables;
+
 import java.sql.*;
 import java.util.Scanner;
 
@@ -6,38 +8,38 @@ public class Main {
     public static void insertIntoTable(Connection connection) throws SQLException {
         Scanner scan = new Scanner(System.in);
 
-        System.out.println("Tables: stores, items, stores_items");
+        System.out.println("Tables:" + Tables.SHOP + Tables.ITEMS + Tables.STORES_ITEMS);
         System.out.println("enter table name");
         String tableName = scan.nextLine();
 
         switch (tableName) {
-            case "stores" -> {
+            case Tables.SHOP -> {
                 System.out.println("enter store name");
                 String storeName = scan.next();
-                String query = "insert into stores (storeName) values (?)";
+                String query = "insert into "+ Tables.SHOP +" (storeName) values (?)";
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
 
                 preparedStatement.setString(1,storeName);
                 preparedStatement.executeUpdate();
             }
-            case "items" -> {
+            case Tables.ITEMS -> {
                 System.out.println("enter item name");
                 String itemName = scan.next();
 
-                String query = "insert into items (itemName) values (?)";
+                String query = "insert into " +Tables.ITEMS +" (itemName) values (?)";
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
 
                 preparedStatement.setString(1, itemName);
                 preparedStatement.executeUpdate();
             }
-            case "stores_items" -> {
+            case Tables.STORES_ITEMS -> {
                 System.out.println("enter item code");
                 int itemID = scan.nextInt();
 
                 System.out.println("enter store code");
                 int storeID = scan.nextInt();
 
-                String query = "insert into stores_items (storeID, itemId) values (?,?)";
+                String query = "insert into "+ Tables.STORES_ITEMS +" (storeID, itemId) values (?,?)";
 
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setInt(1,storeID);
@@ -48,26 +50,29 @@ public class Main {
         }
     }
 
-    public static void selectFromTable(Connection connection) throws SQLException {
-        String query = "select stores.storeName, items.itemName from stores_items " +
-                            " join stores on stores_items.storeId = stores.storeId" +
-                            " join items on stores_items.itemId = items.itemId";
-//                            "where stores_items.storeId = ?";
+    // change stores table to "shops" {done}
+    // read and learn about database pagination what is it and in which cases is it used? and apply it in the select function here
+    // user should be able to see all the count of available pages and select a specific page then they can go to the next page or the previous
+    // edge cases should be handled
+
+    public static void select(Connection connection) throws SQLException {
+        String query = "select "+ Tables.SHOP +".storeName, ITEMS.itemName from " + Tables.STORES_ITEMS + " " +
+                            " join " + Tables.SHOP + " on STORES_ITEMS.storeId = stores.storeId" +
+                            " join " + Tables.ITEMS + " on STORES_ITEMS.itemId = ITEMS.itemId";
         PreparedStatement preparedStatement = connection.prepareStatement(query);
-//        preparedStatement.setInt(1, id);
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
             String storeNme = resultSet.getString("storeName");
             String itemNme =  resultSet.getString("itemName");
-            System.out.println(storeNme +" "+ itemNme);
+            System.out.println("store name: "+storeNme +" has "+ itemNme);
         }
     }
 
     public static void main(String[] args) {
 
-        String url = "jdbc:mysql://localhost:3306/shop";
-        String username = "root";
-        String password = "1230459078150@khaled";
+        final String URL = "jdbc:mysql://localhost:3306/SHOP";
+        final String username = "root";
+        final String password = "1230459078150@khaled";
 
         while (true) {
             Scanner scan = new Scanner(System.in);
@@ -77,24 +82,20 @@ public class Main {
             if (operation.equals("exit")) break;
 
             try {
-                Connection connection = DriverManager.getConnection(url, username, password);
+                Connection connection = DriverManager.getConnection(URL, username, password);
                 Statement statement = connection.createStatement();
 
                 switch (operation) {
                     case "insert" -> insertIntoTable(connection);
-                    case "select" -> selectFromTable(connection);
+                    case "select" -> select(connection);
                     default -> System.out.println("no operation selected");
                 }
                 statement.close();
                 connection.close();
-
-
             } catch (SQLException e) {
                 System.err.println("SQL Error: "
                                    + e.getMessage());
             }
         }
-        System.out.println("loop out");
-
     }
 }
