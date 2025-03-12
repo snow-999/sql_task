@@ -10,12 +10,12 @@ public class Main {
 
         System.out.println("Tables:" + Tables.SHOP + Tables.ITEMS + Tables.STORES_ITEMS);
         System.out.println("enter table name");
-        String tableName = scan.nextLine();
+        String tableName = scan.nextLine().toLowerCase();
 
         switch (tableName) {
             case Tables.SHOP -> {
                 System.out.println("enter store name");
-                String storeName = scan.next();
+                String storeName = scan.next().toLowerCase();
                 String query = "insert into "+ Tables.SHOP +" (storeName) values (?)";
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
 
@@ -24,7 +24,7 @@ public class Main {
             }
             case Tables.ITEMS -> {
                 System.out.println("enter item name");
-                String itemName = scan.next();
+                String itemName = scan.next().toLowerCase();
 
                 String query = "insert into " +Tables.ITEMS +" (itemName) values (?)";
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -56,9 +56,10 @@ public class Main {
     // edge cases should be handled
 
     public static void select(Connection connection) throws SQLException {
-        String query = "select "+ Tables.SHOP +".storeName, ITEMS.itemName from " + Tables.STORES_ITEMS + " " +
-                            " join " + Tables.SHOP + " on STORES_ITEMS.storeId = stores.storeId" +
-                            " join " + Tables.ITEMS + " on STORES_ITEMS.itemId = ITEMS.itemId";
+        String query = "select "+ Tables.SHOP +".storeName, ITEMS.itemName from " + Tables.STORES_ITEMS +
+                            " join " + Tables.SHOP + " on STORES_ITEMS.storeId = "+ Tables.SHOP +".storeId" +
+                            " join " + Tables.ITEMS + " on STORES_ITEMS.itemId = "+ Tables.ITEMS +".itemId " +
+                            " limit 2 offset 2";
         PreparedStatement preparedStatement = connection.prepareStatement(query);
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
@@ -71,18 +72,18 @@ public class Main {
     public static void main(String[] args) {
 
         final String URL = "jdbc:mysql://localhost:3306/SHOP";
-        final String username = "root";
-        final String password = "1230459078150@khaled";
+        final String USER_NAME = "root";
+        final String PASSWORD = "1230459078150@khaled";
 
         while (true) {
             Scanner scan = new Scanner(System.in);
             System.out.println("chose an operation insert, select or exit if you finished");
-            String operation = scan.nextLine();
+            String operation = scan.nextLine().toLowerCase();
 
             if (operation.equals("exit")) break;
 
             try {
-                Connection connection = DriverManager.getConnection(URL, username, password);
+                Connection connection = DriverManager.getConnection(URL, USER_NAME, PASSWORD);
                 Statement statement = connection.createStatement();
 
                 switch (operation) {
