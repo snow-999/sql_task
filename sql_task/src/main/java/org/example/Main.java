@@ -3,55 +3,64 @@ import java.sql.*;
 import java.util.Scanner;
 
 public class Main {
-    public static String insertIntoTable(String tableName) {
+    public static void insertIntoTable(Connection connection) throws SQLException {
         Scanner scan = new Scanner(System.in);
-        StringBuilder query = new StringBuilder();
+
+        System.out.println("Tables: stores, items, stores_items");
+        System.out.println("enter table name");
+        String tableName = scan.nextLine();
+
         switch (tableName) {
             case "stores" -> {
                 System.out.println("enter store name");
-                String name = scan.nextLine();
+                String storeName = scan.next();
+                String query = "insert into stores (storeName) values (?)";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
 
-                System.out.println("enter store code");
-                int code = scan.nextInt();
-                query.append(String.format("INSERT INTO %s (storeCode, storeName) VALUES (%d, '%s')",tableName,code, name));
+                preparedStatement.setString(1,storeName);
+                preparedStatement.executeUpdate();
             }
             case "items" -> {
                 System.out.println("enter item name");
-                String name = scan.nextLine();
+                String itemName = scan.next();
 
+                String query = "insert into items (itemName) values (?)";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+
+                preparedStatement.setString(1, itemName);
+                preparedStatement.executeUpdate();
+            }
+            case "stores_items" -> {
                 System.out.println("enter item code");
-                int code = scan.nextInt();
+                int itemID = scan.nextInt();
 
-                System.out.println("enter item StoreCode");
-                int StoreCode = scan.nextInt();
-                query.append(String.format("INSERT INTO %s (itemCode, itemName, storeCode) VALUES (%d, '%s', %d)",tableName,code, name, StoreCode));
+                System.out.println("enter store code");
+                int storeID = scan.nextInt();
+
+                String query = "insert into stores_items (storeID, itemId) values (?,?)";
+
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setInt(1,storeID);
+                preparedStatement.setInt(2,itemID);
+                preparedStatement.executeUpdate();
             }
-            default -> {
-                query.append("no table with that name");
-            }
+            default -> System.out.println("no table with that name");
         }
-        return query.toString();
     }
 
-    public static String selectFromTable(String tableName) {
-        Scanner scanner = new Scanner(System.in);
-        StringBuilder query = new StringBuilder();
-        switch (tableName) {
-            case "items" ->{
-                System.out.println("chose item code");
-                int code = scanner.nextInt();
-                query.append(String.format("select itemName from items join stores on stores.StoreCode = items.StoreCode where %s.itemCode = %d", tableName, code));
-            }
-            case "stores" -> {
-                System.out.println("chose store code");
-                int code = scanner.nextInt();
-                query.append(String.format("select itemName from items join stores on stores.StoreCode = items.StoreCode where %s.storeCode = %d", tableName, code));
-            }
-            default -> {
-                System.out.println("no table selected");
-            }
+    public static void selectFromTable(Connection connection) throws SQLException {
+        String query = "select stores.storeName, items.itemName from stores_items " +
+                            " join stores on stores_items.storeId = stores.storeId" +
+                            " join items on stores_items.itemId = items.itemId";
+//                            "where stores_items.storeId = ?";
+        PreparedStatement preparedStatement = connection.prepareStatement(query);
+//        preparedStatement.setInt(1, id);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        while (resultSet.next()) {
+            String storeNme = resultSet.getString("storeName");
+            String itemNme =  resultSet.getString("itemName");
+            System.out.println(storeNme +" "+ itemNme);
         }
-        return query.toString();
     }
 
     public static void main(String[] args) {
@@ -60,38 +69,32 @@ public class Main {
         String username = "root";
         String password = "1230459078150@khaled";
 
-        Scanner scan = new Scanner(System.in);
-        System.out.println("chose an operation{insert, select}");
-        String operation = scan.nextLine();
+        while (true) {
+            Scanner scan = new Scanner(System.in);
+            System.out.println("chose an operation insert, select or exit if you finished");
+            String operation = scan.nextLine();
 
-        System.out.println("enter table name");
-        String tableName = scan.nextLine();
+            if (operation.equals("exit")) break;
 
-        try {
-            Connection connection = DriverManager.getConnection(url, username, password);
-            Statement statement = connection.createStatement();
+            try {
+                Connection connection = DriverManager.getConnection(url, username, password);
+                Statement statement = connection.createStatement();
 
-            switch (operation) {
-                case "insert" -> {
-                    statement.executeUpdate(insertIntoTable(tableName));
+                switch (operation) {
+                    case "insert" -> insertIntoTable(connection);
+                    case "select" -> selectFromTable(connection);
+                    default -> System.out.println("no operation selected");
                 }
-                case "select" -> {
-                    ResultSet resultSet = statement.executeQuery(selectFromTable(tableName));
-                    while (resultSet.next()) {
-                        String itemName = resultSet.getString("itemName");
-                        System.out.println(itemName);
-                    }
-                }
-                default -> {
-                    System.out.println("no operation selected");
-                }
+                statement.close();
+                connection.close();
+
+
+            } catch (SQLException e) {
+                System.err.println("SQL Error: "
+                                   + e.getMessage());
             }
-            statement.close();
-            connection.close();
-
-        } catch (SQLException e) {
-            System.err.println("SQL Error: "
-                    + e.getMessage());
         }
+        System.out.println("loop out");
+
     }
 }
