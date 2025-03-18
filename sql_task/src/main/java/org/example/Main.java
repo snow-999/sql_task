@@ -55,9 +55,7 @@ public class Main {
     }
 
     public static int getTotalRecords(Connection connection) throws SQLException {
-        String countQuery = "SELECT COUNT(*) FROM " + Tables.STORES_ITEMS +
-                            " JOIN " + Tables.SHOP + " ON STORES_ITEMS.storeId = " + Tables.SHOP + ".storeId " +
-                            " JOIN " + Tables.ITEMS + " ON STORES_ITEMS.itemId = " + Tables.ITEMS + ".itemId";
+        String countQuery = Queries.countQuery;
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery(countQuery);
 
@@ -67,73 +65,57 @@ public class Main {
         return 0;
     }
 
-    public static void showPagination(Connection connection, int limit, int currentPage) throws SQLException {
+    public static void showPagination(Connection connection, int limit, int currentPage, String col) throws SQLException {
         int totalRecords = getTotalRecords(connection);
 
         int totalPages = (int) Math.ceil((double) totalRecords / limit);
 
         System.out.println("total pages: " + totalPages);
         System.out.println("you are currently on page " + currentPage + " out of " + totalPages);
-        selectByColName(connection, limit, currentPage);
+        selectByColName(connection, limit, currentPage, col);
     }
 
-
-    private static void selectByColName(Connection connection, int limit, int pageNumber) throws SQLException {
+    private static void selectByColName(Connection connection, int limit, int pageNumber, String col) throws SQLException {
         int offset = (pageNumber - 1) * limit;
 
         Scanner scan = new Scanner(System.in);
-        System.out.println("select a method to select by search by: " + Columns.ITEM_ID + ", "+ Columns.ITEM_NAME + ", "+Columns.STORE_ID +", "+Columns.STORE_NAME);
-        String method = scan.next();
-
-        switch (method) {
+        switch (col) {
             case Columns.ITEM_ID -> {
                 System.out.println("Enter item id");
-                int code = scan.nextInt();
                 String query = Queries.itemIdQuery + " limit "+ limit +" offset "+ offset ;
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setInt(1, code);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
-                    String itemName = resultSet.getString("itemName");
-                    String storeName = resultSet.getString("storeName");
-                    System.out.println("item Id: "+code+" is "+ itemName+" in store " +storeName);
+                    int itemId = resultSet.getInt("itemId");
+                    System.out.println("item is: "+ itemId);
                 }
-
             }
+
             case Columns.ITEM_NAME -> {
-                System.out.println("Enter item Name");
-                String code = scan.next();
                 String query = Queries.itemNameQuery + " limit "+ limit +" offset "+ offset ;
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setString(1, code);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
                     String itemName = resultSet.getString("itemName");
-                    String storeName = resultSet.getString("storeName");
-                    System.out.println("item name: " + itemName+ " is in store named " + storeName);
+                    System.out.println("item name: " + itemName);
                 }
-
             }
+
             case Columns.STORE_ID  -> {
-                System.out.println("Enter Store id");
-                int code = scan.nextInt();
                 String query = Queries.StoreIdQuery + " limit "+ limit +" offset "+ offset ;
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setInt(1, code);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
-                    String itemName = resultSet.getString("itemName");
-                    String storeName = resultSet.getString("storeName");
-                    System.out.println("store id: " + code+ " is named "+ storeName + " and has "+ itemName);
+                    String storeId = resultSet.getString("storeId");
+                    System.out.println("stores ids: "+ storeId);
                 }
             }
+
             case Columns.STORE_NAME -> {
                 System.out.println("Enter Store Name");
-                String name = scan.next();
 
                 String query = Queries.StoreNameQuery + " limit "+ limit +" offset "+ offset ;
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setString(1, name);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
                     String storeNme = resultSet.getString("storeName");
@@ -142,7 +124,6 @@ public class Main {
                 }
             }
         }
-
     }
 
     public static void select(Connection connection, int limit, int pageNumber) throws SQLException {
@@ -181,11 +162,14 @@ public class Main {
                 switch (operation) {
                     case Operations.INSERT -> insertIntoTable(connection);
                     case Operations.SELECT -> {
+                        System.out.println("select a method to select by search by: " + Columns.ITEM_ID + ", "+ Columns.ITEM_NAME + ", "+Columns.STORE_ID +", "+Columns.STORE_NAME);
+                        String col = scan.next();
+
                         int totalRecords = getTotalRecords(connection);
                         int limit = 2;
                         int startPage = 1;
                         int totalPages = (int) Math.ceil((double) totalRecords / limit);
-                        showPagination(connection, limit, startPage);
+                        showPagination(connection, limit, startPage, col);
                         while (true) {
 
                             System.out.println("go next/previous or exit");
@@ -196,14 +180,14 @@ public class Main {
                             switch (option) {
                                 case Operations.CONTINUE -> {
                                     if (totalPages > startPage){
-                                        showPagination(connection, limit, ++startPage);
+                                        showPagination(connection, limit, ++startPage, col);
                                     }  else {
                                         System.out.println(Operations.UNAVAILABLE);
                                     }
                                 }
                                 case Operations.PREVIOUS -> {
                                     if (startPage <= totalPages && startPage > 1) {
-                                        showPagination(connection, limit, --startPage);
+                                        showPagination(connection, limit, --startPage, col);
                                     } else {
                                         System.out.println(Operations.UNAVAILABLE);
                                     }
