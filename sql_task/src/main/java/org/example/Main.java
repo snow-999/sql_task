@@ -79,51 +79,53 @@ public class Main {
 
 
     private static void selectByColName(Connection connection, int limit, int pageNumber) throws SQLException {
-
         int offset = (pageNumber - 1) * limit;
+
         Scanner scan = new Scanner(System.in);
         System.out.println("select a method to select by search by: " + Columns.ITEM_ID + ", "+ Columns.ITEM_NAME + ", "+Columns.STORE_ID +", "+Columns.STORE_NAME);
         String method = scan.next();
 
         switch (method) {
             case Columns.ITEM_ID -> {
-                System.out.println("Enter Store Name");
+                System.out.println("Enter item id");
                 int code = scan.nextInt();
                 String query = Queries.itemIdQuery + " limit "+ limit +" offset "+ offset ;
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setInt(1, code);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
-                    int itemId = resultSet.getInt("itemId");
-                    System.out.println("store name: " + itemId);
+                    String itemName = resultSet.getString("itemName");
+                    String storeName = resultSet.getString("storeName");
+                    System.out.println("item Id: "+code+" is "+ itemName+" in store " +storeName);
                 }
 
             }
             case Columns.ITEM_NAME -> {
-                System.out.println("Enter Store Name");
-                int code = scan.nextInt();
+                System.out.println("Enter item Name");
+                String code = scan.next();
                 String query = Queries.itemNameQuery + " limit "+ limit +" offset "+ offset ;
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setInt(1, code);
+                preparedStatement.setString(1, code);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
-                    int itemId = resultSet.getInt("itemId");
-                    System.out.println("store name: " + itemId);
+                    String itemName = resultSet.getString("itemName");
+                    String storeName = resultSet.getString("storeName");
+                    System.out.println("item name: " + itemName+ " is in store named " + storeName);
                 }
 
             }
             case Columns.STORE_ID  -> {
-                System.out.println("Enter Store Name");
+                System.out.println("Enter Store id");
                 int code = scan.nextInt();
                 String query = Queries.StoreIdQuery + " limit "+ limit +" offset "+ offset ;
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setInt(1, code);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
-                    int storeId = resultSet.getInt("storeId");
-                    System.out.println("store name: " + storeId);
+                    String itemName = resultSet.getString("itemName");
+                    String storeName = resultSet.getString("storeName");
+                    System.out.println("store id: " + code+ " is named "+ storeName + " and has "+ itemName);
                 }
-
             }
             case Columns.STORE_NAME -> {
                 System.out.println("Enter Store Name");
@@ -135,7 +137,8 @@ public class Main {
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
                     String storeNme = resultSet.getString("storeName");
-                    System.out.println("store name: " + storeNme);
+                    String itemNme = resultSet.getString("itemName");
+                    System.out.println("store name: " + storeNme+ " has item Name "+ itemNme);
                 }
             }
         }
