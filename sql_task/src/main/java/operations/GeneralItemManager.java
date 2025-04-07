@@ -1,10 +1,12 @@
 package operations;
 
 import strings.Columns;
+import strings.Operations;
 import strings.Queries;
 import strings.Tables;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +37,7 @@ public class GeneralItemManager<T> {
         if (!columns.isEmpty()) columns.setLength(columns.length() - 2);
         if (!values.isEmpty()) values.setLength(values.length() - 2);
 
-        String insertQuery = "INSERT INTO " + tableName + " (" + columns.toString() + ") VALUES (" + values.toString() + ")";
+        String insertQuery = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
             for (int i = 0; i < valueList.size(); i++) {
                 preparedStatement.setObject(i + 1, valueList.get(i));
@@ -55,64 +57,103 @@ public class GeneralItemManager<T> {
         return 0;
     }
 
-    public static void showPagination(Connection connection, int limit, int currentPage, String col) throws SQLException {
+    public void showPagination(Connection connection, T object, int limit, int currentPage) throws SQLException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
         int totalRecords = getTotalRecords(connection);
 
         int totalPages = (int) Math.ceil((double) totalRecords / limit);
 
         System.out.println("total pages: " + totalPages);
         System.out.println("you are currently on page " + currentPage + " out of " + totalPages);
-        selectByColName(connection, limit, currentPage, col);
+        selectTable(connection, object, limit, currentPage);
     }
 
-    private static void selectByColName(Connection connection, int limit, int pageNumber, String col) throws SQLException {
-        int offset = (pageNumber - 1) * limit;
+    public void startPagination (Connection connection, T object, int limit, int startPage, int totalPages) throws SQLException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
+        while (true) {
+            Scanner scan = new Scanner(System.in);
 
-        switch (col) {
-            case Columns.ITEM_ID -> {
-                System.out.println("Enter item id");
-                String query = Queries.itemIdQuery + " limit "+ limit +" offset "+ offset ;
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                ResultSet resultSet = preparedStatement.executeQuery();
-                while (resultSet.next()) {
-                    int itemId = resultSet.getInt("itemId");
-                    System.out.println("item is: "+ itemId);
+            System.out.println("go next/previous or exit");
+
+            String option = scan.next().toLowerCase();
+
+            if (option.equals(Operations.EXIT)) break;
+
+            switch (option) {
+                case Operations.CONTINUE -> {
+                    if (totalPages > startPage){
+                        showPagination(connection, object, limit, ++startPage);
+                    }  else {
+                        System.out.println(Operations.UNAVAILABLE);
+                    }
                 }
-            }
-
-            case Columns.ITEM_NAME -> {
-                String query = Queries.itemNameQuery + " limit "+ limit +" offset "+ offset ;
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                ResultSet resultSet = preparedStatement.executeQuery();
-                while (resultSet.next()) {
-                    String itemName = resultSet.getString("itemName");
-                    System.out.println("item name: " + itemName);
-                }
-            }
-
-            case Columns.STORE_ID  -> {
-                String query = Queries.StoreIdQuery + " limit "+ limit +" offset "+ offset ;
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                ResultSet resultSet = preparedStatement.executeQuery();
-                while (resultSet.next()) {
-                    String storeId = resultSet.getString("storeId");
-                    System.out.println("stores ids: "+ storeId);
-                }
-            }
-
-            case Columns.STORE_NAME -> {
-                System.out.println("Enter Store Name");
-
-                String query = Queries.StoreNameQuery + " limit "+ limit +" offset "+ offset ;
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                ResultSet resultSet = preparedStatement.executeQuery();
-                while (resultSet.next()) {
-                    String storeNme = resultSet.getString("storeName");
-                    String itemNme = resultSet.getString("itemName");
-                    System.out.println("store name: " + storeNme+ " has item Name "+ itemNme);
+                case Operations.PREVIOUS -> {
+                    if (startPage <= totalPages && startPage > 1) {
+                        showPagination(connection, object, limit, --startPage);
+                    } else {
+                        System.out.println(Operations.UNAVAILABLE);
+                    }
                 }
             }
         }
+    }
+
+
+    public static <T> List<T> selectTable(Connection connection ,T obj, int limit, int pageNumber) throws SQLException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+
+        int offset = (pageNumber - 1) * limit;
+        List<T> resultList = new ArrayList<>();
+        Class<?> clazz = obj.getClass();
+
+        String tableName = clazz.getSimpleName().toLowerCase();
+
+        Field[] fields = clazz.getDeclaredFields();
+
+        StringBuilder whereClause = new StringBuilder(" WHERE ");
+        boolean first = true;
+
+        for (Field field : fields) {
+            field.setAccessible(true);
+            Object value = field.get(obj);
+
+            if (value != null) {
+                if (!first) {
+                    whereClause.append(" AND ");
+                }
+                whereClause.append(field.getName()).append(" = ? ");
+                first = false;
+            }
+        }
+
+        if (first) {
+            throw new IllegalArgumentException("All fields of the object are null. Cannot form a query.");
+        }
+
+        String sql = "SELECT * FROM " + tableName + whereClause.toString() +
+        "limit "+ limit +" offset "+ offset +" ";;
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            int index = 1;
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object value = field.get(obj);
+                if (value != null) {
+                    preparedStatement.setObject(index++, value);
+                }
+            }
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                Object resultObj = clazz.getDeclaredConstructor().newInstance();
+                for (Field field : fields) {
+                    field.setAccessible(true);
+                    Object fieldValue = resultSet.getObject(field.getName());
+                    field.set(resultObj, fieldValue);
+                }
+                resultList.add((T) resultObj);
+            }
+        }
+
+        return resultList;
     }
 
     public static void select(Connection connection, int limit, int pageNumber) throws SQLException {
