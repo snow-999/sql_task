@@ -2,8 +2,6 @@ package operations;
 
 import strings.Operations;
 import strings.Queries;
-import strings.Tables;
-import tables.Shop;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -94,7 +92,6 @@ public class GeneralItemManager<T> {
             }
         }
     }
-
 
     public List<T> selectTable(Connection connection ,T obj, int limit, int pageNumber) throws SQLException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
 
