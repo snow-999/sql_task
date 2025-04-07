@@ -72,7 +72,6 @@ public class GeneralItemManager<T> {
             Scanner scan = new Scanner(System.in);
 
             System.out.println("go next/previous or exit");
-
             String option = scan.next().toLowerCase();
 
             if (option.equals(Operations.EXIT)) break;
@@ -80,7 +79,7 @@ public class GeneralItemManager<T> {
             switch (option) {
                 case Operations.CONTINUE -> {
                     if (totalPages > startPage){
-                        showPagination(connection, object, limit, ++startPage);
+                         showPagination(connection, object, limit, ++startPage);
                     }  else {
                         System.out.println(Operations.UNAVAILABLE);
                     }
@@ -107,15 +106,10 @@ public class GeneralItemManager<T> {
 
         Field[] fields = clazz.getDeclaredFields();
 
-
-
-
         String sql = "SELECT * FROM " + tableName +
         " limit "+ limit +" offset "+ offset +" ";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 Object resultObj = clazz.getDeclaredConstructor().newInstance();
@@ -127,24 +121,6 @@ public class GeneralItemManager<T> {
                 resultList.add((T) resultObj);
             }
         }
-
         return resultList;
-    }
-
-    public static void select(Connection connection, int limit, int pageNumber) throws SQLException {
-        int offset = (pageNumber - 1) * limit;
-
-        String query = "select "+ Tables.SHOP +".storeName, ITEMS.itemName from " + Tables.STORES_ITEMS +
-                " join " + Tables.SHOP + " on STORES_ITEMS.storeId = "+ Tables.SHOP +".storeId" +
-                " join " + Tables.ITEMS + " on STORES_ITEMS.itemId = "+ Tables.ITEMS +".itemId " +
-                "limit "+ limit +" offset "+ offset +" ";
-
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        while (resultSet.next()) {
-            String storeNme = resultSet.getString("storeName");
-            String itemNme =  resultSet.getString("itemName");
-            System.out.println("store name: " + storeNme + " has " + itemNme);
-        }
     }
 }

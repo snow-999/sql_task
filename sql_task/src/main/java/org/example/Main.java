@@ -66,7 +66,7 @@ public class Main {
                                 System.out.println("Shop id: ");
                                 int storeId = scan.nextInt();
                                 stores_items.setItemId(storeItemId);
-                                stores_items.setShopId(storeId);
+                                stores_items.setStoreId(storeId);
                                 GeneralItemManager<Stores_items> stores_itemsGeneralItemManager = new GeneralItemManager<>();
                                 stores_itemsGeneralItemManager.insertIntoTable(connection, stores_items);
                             }
@@ -89,14 +89,15 @@ public class Main {
                                 for (Shop shop1: shops) {
                                     System.out.println("Shop Name is: "+ shop1.getStoreName()+ " Shop Id is : "+ shop1.getStoreId());
                                 }
+                                shop.startShopPagination(connection, shop, limit, totalPages, startPage);
                             }
                             case Tables.ITEMS -> {
                                 GeneralItemManager<Items> generalItemManager = new GeneralItemManager<>();
                                 List<Items> items = generalItemManager.showPagination(connection, item, limit, startPage);
-                                generalItemManager.startPagination(connection, item, limit, startPage, totalPages);
                                 for (Items item1: items) {
                                     System.out.println("Shop Name is: "+ item1.getItemName()+ " Shop Id is : "+ item1.getItemId());
                                 }
+                                item.startItemsPagination(connection, item, limit, totalPages, startPage);
                             }
                             case Tables.STORES_ITEMS -> {
                                 GeneralItemManager<Stores_items> generalItemManager = new GeneralItemManager<>();
