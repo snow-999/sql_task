@@ -1,6 +1,6 @@
 package tables;
 
-public class stores_items {
+public class Stores_items {
     public int itemId;
     public int shopId;
 

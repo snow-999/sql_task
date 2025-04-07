@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class GeneralItemManager<T> {
-    public T insertIntoTable(Connection connection, T object) throws SQLException, IllegalAccessException {
+    public void insertIntoTable(Connection connection, T object) throws SQLException, IllegalAccessException {
 
         Class<?> clazz = object.getClass();
         String tableName = clazz.getSimpleName().toLowerCase();
@@ -42,8 +42,6 @@ public class GeneralItemManager<T> {
             }
             preparedStatement.executeUpdate();
         }
-
-        return object;
     }
 
     public static int getTotalRecords(Connection connection) throws SQLException {
@@ -70,7 +68,6 @@ public class GeneralItemManager<T> {
     private static void selectByColName(Connection connection, int limit, int pageNumber, String col) throws SQLException {
         int offset = (pageNumber - 1) * limit;
 
-        Scanner scan = new Scanner(System.in);
         switch (col) {
             case Columns.ITEM_ID -> {
                 System.out.println("Enter item id");

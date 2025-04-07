@@ -2,6 +2,10 @@ package org.example;
 import operations.GeneralItemManager;
 import strings.Columns;
 import strings.Operations;
+import strings.Tables;
+import tables.Items;
+import tables.Shop;
+import tables.Stores_items;
 
 import java.sql.*;
 import java.util.Scanner;
@@ -26,7 +30,46 @@ public class Main {
                 Statement statement = connection.createStatement();
 
                 switch (operation) {
-//                    case Operations.INSERT -> GeneralItemManager.insertIntoTable(connection);
+                    case Operations.INSERT -> {
+                        System.out.println("select a table to insert to: " + Tables.STORES_ITEMS + ", "+ Tables.ITEMS + ", "+Tables.SHOP +".");
+                        String table = scan.next();
+
+                        switch (table) {
+                            case Tables.SHOP -> {
+                                Shop shop = new Shop();
+                                System.out.println("Shop Id: ");
+                                int shopId = scan.nextInt();
+                                System.out.println("Shop Name: ");
+                                String shopName = scan.next();
+                                shop.setStoreId(shopId);
+                                shop.setStoreName(shopName);
+                                GeneralItemManager<Shop> shopGeneralItemManager = new GeneralItemManager<>();
+                                shopGeneralItemManager.insertIntoTable(connection, shop);
+                            }
+                            case Tables.ITEMS -> {
+                                Items items = new Items();
+                                System.out.println("Shop Id: ");
+                                int itemId = scan.nextInt();
+                                System.out.println("Shop Name: ");
+                                String itemName = scan.next();
+                                items.setItemId(itemId);
+                                items.setItemName(itemName);
+                                GeneralItemManager<Items> itemsGeneralItemManager = new GeneralItemManager<>();
+                                itemsGeneralItemManager.insertIntoTable(connection, items);
+                            }
+                            case Tables.STORES_ITEMS -> {
+                                Stores_items stores_items = new Stores_items();
+                                System.out.println("Item Id: ");
+                                int storeItemId = scan.nextInt();
+                                System.out.println("Shop id: ");
+                                int storeId = scan.nextInt();
+                                stores_items.setItemId(storeItemId);
+                                stores_items.setShopId(storeId);
+                                GeneralItemManager<Stores_items> stores_itemsGeneralItemManager = new GeneralItemManager<>();
+                                stores_itemsGeneralItemManager.insertIntoTable(connection, stores_items);
+                            }
+                        }
+                    }
                     case Operations.SELECT -> {
                         System.out.println("select a method to select by search by: " + Columns.ITEM_ID + ", "+ Columns.ITEM_NAME + ", "+Columns.STORE_ID +", "+Columns.STORE_NAME);
                         String col = scan.next();
@@ -61,10 +104,13 @@ public class Main {
                             }
                         }
                     }
+                    default -> {
+                        return;
+                    }
                 }
                 statement.close();
                 connection.close();
-            } catch (SQLException e) {
+            } catch (SQLException | IllegalAccessException e) {
                 System.err.println("SQL Error: "
                                    + e.getMessage());
             }

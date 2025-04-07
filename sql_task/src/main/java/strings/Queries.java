@@ -14,7 +14,7 @@ public class Queries {
                                 " join " + Tables.SHOP + " as sh on si.storeId = sh.storeId" +
                                 " join " + Tables.ITEMS + " as it on si.itemId = it.itemId ";
 
-    final public static String itemIdQuery = "select it.itemId from stores_items as si" +
+    final public static String itemIdQuery = "select it.itemId from Stores_items as si" +
                                 " join "+ Tables.SHOP +" as sh on si.storeId = sh.storeId"+
                                 " join "+ Tables.ITEMS + " as it on si.itemId = it.itemId";
 

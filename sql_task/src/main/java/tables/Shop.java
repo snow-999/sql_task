@@ -1,14 +1,14 @@
 package tables;
 
 public class Shop {
-    public String shopName;
-    public int shopId;
+    public String storeName;
+    public int storeId;
 
-    public void setShopId(int shopId) {
-        this.shopId = shopId;
+    public void setStoreId(int storeId) {
+        this.storeId = storeId;
     }
 
-    public void setShopName(String shopName) {
-        this.shopName = shopName;
+    public void setStoreName(String storeName) {
+        this.storeName = storeName;
     }
 }
