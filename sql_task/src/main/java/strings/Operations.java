@@ -7,4 +7,5 @@ public class Operations {
     final public static String CONTINUE = "next";
     final public static String PREVIOUS = "previous";
     final public static String UNAVAILABLE = "unavailable";
+    final public static String FINISHED = "finished";
 }

@@ -13,7 +13,6 @@ import java.util.Scanner;
 
 public class Main {
 
-
     public static void main(String[] args) throws InvocationTargetException, InstantiationException, NoSuchMethodException {
         final String URL = "jdbc:mysql://localhost:3306/SHOP";
         final String USER_NAME = "root";
@@ -107,9 +106,7 @@ public class Main {
                         }
 
                     }
-                    default -> {
-                        return;
-                    }
+                    case Operations.FINISHED -> {return;}
                 }
                 statement.close();
                 connection.close();
