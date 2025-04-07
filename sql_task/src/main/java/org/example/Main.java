@@ -8,6 +8,7 @@ import tables.Stores_items;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -30,7 +31,7 @@ public class Main {
                 Statement statement = connection.createStatement();
 
                 Shop shop = new Shop();
-                Items items = new Items();
+                Items item = new Items();
                 Stores_items stores_items = new Stores_items();
 
                 switch (operation) {
@@ -54,10 +55,10 @@ public class Main {
                                 int itemId = scan.nextInt();
                                 System.out.println("Shop Name: ");
                                 String itemName = scan.next();
-                                items.setItemId(itemId);
-                                items.setItemName(itemName);
+                                item.setItemId(itemId);
+                                item.setItemName(itemName);
                                 GeneralItemManager<Items> itemsGeneralItemManager = new GeneralItemManager<>();
-                                itemsGeneralItemManager.insertIntoTable(connection, items);
+                                itemsGeneralItemManager.insertIntoTable(connection, item);
                             }
                             case Tables.STORES_ITEMS -> {
                                 System.out.println("Item Id: ");
@@ -84,13 +85,18 @@ public class Main {
                         switch (tableName) {
                             case Tables.SHOP -> {
                                 GeneralItemManager<Shop> generalItemManager = new GeneralItemManager<>();
-                                generalItemManager.showPagination(connection, shop, limit, startPage);
-                                generalItemManager.startPagination(connection, shop, limit, startPage, totalPages);
+                                List<Shop> shops = generalItemManager.showPagination(connection, shop, limit, startPage);
+                                for (Shop shop1: shops) {
+                                    System.out.println("Shop Name is: "+ shop1.getStoreName()+ " Shop Id is : "+ shop1.getStoreId());
+                                }
                             }
                             case Tables.ITEMS -> {
                                 GeneralItemManager<Items> generalItemManager = new GeneralItemManager<>();
-                                generalItemManager.showPagination(connection, items, limit, startPage);
-                                generalItemManager.startPagination(connection, items, limit, startPage, totalPages);
+                                List<Items> items = generalItemManager.showPagination(connection, item, limit, startPage);
+                                generalItemManager.startPagination(connection, item, limit, startPage, totalPages);
+                                for (Items item1: items) {
+                                    System.out.println("Shop Name is: "+ item1.getItemName()+ " Shop Id is : "+ item1.getItemId());
+                                }
                             }
                             case Tables.STORES_ITEMS -> {
                                 GeneralItemManager<Stores_items> generalItemManager = new GeneralItemManager<>();

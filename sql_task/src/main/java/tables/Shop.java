@@ -11,4 +11,12 @@ public class Shop {
     public void setStoreName(String storeName) {
         this.storeName = storeName;
     }
+
+    public String getStoreName() {
+        return storeName;
+    }
+
+    public int getStoreId() {
+        return storeId;
+    }
 }
