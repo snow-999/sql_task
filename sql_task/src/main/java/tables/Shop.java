@@ -1,6 +1,6 @@
 package tables;
 
-import operations.GeneralItemManager;
+import operations.DatBaseManager;
 import strings.Operations;
 
 import java.lang.reflect.InvocationTargetException;
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Shop {
+
     public String storeName;
     public int storeId;
 
@@ -28,8 +29,9 @@ public class Shop {
     public int getStoreId() {
         return storeId;
     }
-    public void startShopPagination(Connection connection, Shop shop, int limit, int totalPages, int startPage) throws SQLException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
-        GeneralItemManager<Shop> shopGeneralItemManager = new GeneralItemManager<>();
+
+    public void startShopPagination(Shop shop, int limit, int totalPages, int startPage) throws SQLException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
+        DatBaseManager<Shop> shopGeneralItemManager = new DatBaseManager<>();
         Scanner scan = new Scanner(System.in);
         while (true) {
             System.out.println("go next/previous or exit");
@@ -40,7 +42,7 @@ public class Shop {
             switch (option) {
                 case Operations.CONTINUE -> {
                     if (totalPages > startPage){
-                        List<Shop> shops = shopGeneralItemManager.showPagination(connection, shop, limit, ++startPage);
+                        List<Shop> shops = shopGeneralItemManager.showPagination( shop, limit, ++startPage);
                         for (Shop shop1: shops) {
                             System.out.println("Shop Name is: "+ shop1.getStoreName()+ " Shop Id is : "+ shop1.getStoreId());
                         }
@@ -50,7 +52,7 @@ public class Shop {
                 }
                 case Operations.PREVIOUS -> {
                     if (startPage <= totalPages && startPage > 1) {
-                        List<Shop> shops = shopGeneralItemManager.showPagination(connection, shop, limit, --startPage);
+                        List<Shop> shops = shopGeneralItemManager.showPagination( shop, limit, --startPage);
                         for (Shop shop1: shops) {
                             System.out.println("Shop Name is: "+ shop1.getStoreName()+ " Shop Id is : "+ shop1.getStoreId());
                         }

@@ -10,8 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class GeneralItemManager<T> {
-    public void insertIntoTable(Connection connection, T object) throws SQLException, IllegalAccessException {
+public class DatBaseManager<T> {
+
+    final String URL = "jdbc:mysql://localhost:3306/SHOP";
+    final String USER_NAME = "root";
+    final String PASSWORD = "1230459078150@khaled";
+    Connection connection = DriverManager.getConnection(URL, USER_NAME, PASSWORD);
+
+    public DatBaseManager() throws SQLException {
+    }
+
+    public void insertIntoTable(T object) throws SQLException, IllegalAccessException {
 
         Class<?> clazz = object.getClass();
         String tableName = clazz.getSimpleName().toLowerCase();
@@ -44,7 +53,7 @@ public class GeneralItemManager<T> {
         }
     }
 
-    public static int getTotalRecords(Connection connection) throws SQLException {
+    public static int getTotalRecords() throws SQLException {
         String countQuery = Queries.countQuery;
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery(countQuery);
@@ -55,17 +64,17 @@ public class GeneralItemManager<T> {
         return 0;
     }
 
-    public List<T> showPagination(Connection connection, T object, int limit, int currentPage) throws SQLException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
+    public List<T> showPagination(T object, int limit, int currentPage) throws SQLException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
         int totalRecords = getTotalRecords(connection);
 
         int totalPages = (int) Math.ceil((double) totalRecords / limit);
 
-        System.out.println("total pages: " + totalPages);
         System.out.println("you are currently on page " + currentPage + " out of " + totalPages);
+        System.out.println("total pages: " + totalPages);
         return selectTable(connection, object, limit, currentPage);
     }
 
-    public void startPagination (Connection connection, T object, int limit, int startPage, int totalPages) throws SQLException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
+    public void startPagination (T object, int limit, int startPage, int totalPages) throws SQLException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
         while (true) {
             Scanner scan = new Scanner(System.in);
 
@@ -93,7 +102,7 @@ public class GeneralItemManager<T> {
         }
     }
 
-    public List<T> selectTable(Connection connection ,T obj, int limit, int pageNumber) throws SQLException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    public List<T> selectTable(T obj, int limit, int pageNumber) throws SQLException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
 
         int offset = (pageNumber - 1) * limit;
         List<T> resultList = new ArrayList<>();

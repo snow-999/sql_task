@@ -1,6 +1,6 @@
 package tables;
 
-import operations.GeneralItemManager;
+import operations.DatBaseManager;
 import strings.Operations;
 
 import java.lang.reflect.InvocationTargetException;
@@ -29,8 +29,8 @@ public class Items {
         return itemId;
     }
 
-    public void startItemsPagination(Connection connection, Items item, int limit, int totalPages, int startPage) throws SQLException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
-        GeneralItemManager<Items> shopGeneralItemManager = new GeneralItemManager<>();
+    public void startItemsPagination(Items item, int limit, int totalPages, int startPage) throws SQLException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
+        DatBaseManager<Items> shopGeneralItemManager = new DatBaseManager<>();
         Scanner scan = new Scanner(System.in);
         while (true) {
             System.out.println("go next/previous or exit");
@@ -41,7 +41,7 @@ public class Items {
             switch (option) {
                 case Operations.CONTINUE -> {
                     if (totalPages > startPage){
-                        List<Items> items = shopGeneralItemManager.showPagination(connection, item, limit, ++startPage);
+                        List<Items> items = shopGeneralItemManager.showPagination( item, limit, ++startPage);
                         for (Items itm: items) {
                             System.out.println("Items Name is: "+ itm.getItemName()+ " Items Id is : "+ itm.getItemId());
                         }
@@ -51,7 +51,7 @@ public class Items {
                 }
                 case Operations.PREVIOUS -> {
                     if (startPage <= totalPages && startPage > 1) {
-                        List<Items> items = shopGeneralItemManager.showPagination(connection, item, limit, --startPage);
+                        List<Items> items = shopGeneralItemManager.showPagination(item, limit, --startPage);
                         for (Items itm: items) {
                             System.out.println("Items Name is: "+ itm.getItemName()+ " Items Id is : "+ itm.getItemId());
                         }

@@ -1,5 +1,5 @@
 package org.example;
-import operations.GeneralItemManager;
+import operations.DatBaseManager;
 import strings.*;
 import tables.*;
 
@@ -37,24 +37,50 @@ public class Main {
 
                         switch (table) {
                             case TablesNames.SHOP -> {
-                                System.out.println("Shop Id: ");
-                                int shopId = scan.nextInt();
-                                System.out.println("Shop Name: ");
-                                String shopName = scan.next();
-                                shop.setStoreId(shopId);
-                                shop.setStoreName(shopName);
-                                GeneralItemManager<Shop> shopGeneralItemManager = new GeneralItemManager<>();
-                                shopGeneralItemManager.insertIntoTable(connection, shop);
+                                System.out.println("Option To Chose From To Insert: Id, ShopName Or All.");
+                                String ans = scan.next().toLowerCase();
+                                if (ans.equals("id")) {
+                                    System.out.println("Shop Id: ");
+                                    int shopId = scan.nextInt();
+                                    shop.setStoreId(shopId);
+                                    shop.setStoreName("");
+                                } else if (ans.equals("shopname")) {
+                                    System.out.println("Shop Name: ");
+                                    String shopName = scan.next();
+                                    shop.setStoreName(shopName);
+                                } else {
+                                    System.out.println("Shop Id: ");
+                                    int shopId = scan.nextInt();
+                                    System.out.println("Shop Name: ");
+                                    String shopName = scan.next();
+                                    shop.setStoreId(shopId);
+                                    shop.setStoreName(shopName);
+                                }
+                                DatBaseManager<Shop> shopGeneralItemManager = new DatBaseManager<>();
+                                shopGeneralItemManager.insertIntoTable(shop);
                             }
                             case TablesNames.ITEMS -> {
-                                System.out.println("Shop Id: ");
-                                int itemId = scan.nextInt();
-                                System.out.println("Shop Name: ");
-                                String itemName = scan.next();
-                                item.setItemId(itemId);
-                                item.setItemName(itemName);
-                                GeneralItemManager<Items> itemsGeneralItemManager = new GeneralItemManager<>();
-                                itemsGeneralItemManager.insertIntoTable(connection, item);
+                                System.out.println("Option To Chose From To Insert: Id, ItemName Or All");
+                                String ans = scan.next().toLowerCase();
+                                if (ans.equals("id")) {
+                                    System.out.println("Item Id: ");
+                                    int itemId = scan.nextInt();
+                                    item.setItemId(itemId);
+                                    item.setItemName("");
+                                } else if (ans.equals("itemname")) {
+                                    System.out.println("Item Name: ");
+                                    String itemName = scan.next();
+                                    item.setItemName(itemName);
+                                } else {
+                                    System.out.println("Item Id: ");
+                                    int itemId = scan.nextInt();
+                                    System.out.println("Item Name: ");
+                                    String itemName = scan.next();
+                                    item.setItemId(itemId);
+                                    item.setItemName(itemName);
+                                }
+                                DatBaseManager<Items> itemsGeneralItemManager = new DatBaseManager<>();
+                                itemsGeneralItemManager.insertIntoTable(item);
                             }
                             case TablesNames.STORES_ITEMS -> {
                                 System.out.println("Item Id: ");
@@ -63,14 +89,14 @@ public class Main {
                                 int storeId = scan.nextInt();
                                 stores_items.setItemId(storeItemId);
                                 stores_items.setStoreId(storeId);
-                                GeneralItemManager<Stores_items> stores_itemsGeneralItemManager = new GeneralItemManager<>();
-                                stores_itemsGeneralItemManager.insertIntoTable(connection, stores_items);
+                                DatBaseManager<Stores_items> stores_itemsGeneralItemManager = new DatBaseManager<>();
+                                stores_itemsGeneralItemManager.insertIntoTable(stores_items);
                             }
                         }
                     }
                     case Operations.SELECT -> {
 
-                        int totalRecords = GeneralItemManager.getTotalRecords(connection);
+                        int totalRecords = DatBaseManager.getTotalRecords();
                         int limit = 2;
                         int startPage = 1;
                         int totalPages = (int) Math.ceil((double) totalRecords / limit);
@@ -80,25 +106,24 @@ public class Main {
                         String tableName = scan.next();
                         switch (tableName) {
                             case TablesNames.SHOP -> {
-                                GeneralItemManager<Shop> generalItemManager = new GeneralItemManager<>();
-                                List<Shop> shops = generalItemManager.showPagination(connection, shop, limit, startPage);
+                                DatBaseManager<Shop> generalItemManager = new DatBaseManager<>();
+                                List<Shop> shops = generalItemManager.showPagination(shop, limit, startPage);
                                 for (Shop shp : shops) {
                                     System.out.println("Shop Name is: "+ shp.getStoreName()+ " Shop Id is : "+ shp.getStoreId());
                                 }
-                                shop.startShopPagination(connection, shop, limit, totalPages, startPage);
+                                shop.startShopPagination(shop, limit, totalPages, startPage);
                             }
                             case TablesNames.ITEMS -> {
-                                GeneralItemManager<Items> generalItemManager = new GeneralItemManager<>();
-                                List<Items> items = generalItemManager.showPagination(connection, item, limit, startPage);
+                                DatBaseManager<Items> generalItemManager = new DatBaseManager<>();
+                                List<Items> items = generalItemManager.showPagination(item, limit, startPage);
                                 for (Items itm : items) {
                                     System.out.println("Shop Name is: "+ itm.getItemName()+ " Shop Id is : "+ itm.getItemId());
                                 }
-                                item.startItemsPagination(connection, item, limit, totalPages, startPage);
+                                item.startItemsPagination(item, limit, totalPages, startPage);
                             }
                             case TablesNames.STORES_ITEMS -> {
-                                GeneralItemManager<Stores_items> generalItemManager = new GeneralItemManager<>();
-                                generalItemManager.showPagination(connection, stores_items, limit, startPage);
-                                generalItemManager.startPagination(connection, stores_items, limit, startPage, totalPages);
+                                DatBaseManager<Stores_items> generalItemManager = new DatBaseManager<>();
+
                             }
                         }
 
