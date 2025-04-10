@@ -124,7 +124,11 @@ public class Main {
                             }
                             case TablesNames.STORES_ITEMS -> {
                                 DatBaseManager<Stores_items> generalItemManager = new DatBaseManager<>();
-
+                                List<Stores_items> stores_item = generalItemManager.selectTable(stores_items, limit, startPage);
+                                for (Stores_items itm : stores_item) {
+                                    System.out.println("item id: " + itm.getItemId()+"and it exists in shop Id: "+itm.getStoreId());
+                                }
+                                item.startItemsPagination(item, limit, totalPages, startPage);
                             }
                         }
 

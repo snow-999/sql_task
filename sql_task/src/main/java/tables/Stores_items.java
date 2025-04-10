@@ -11,4 +11,12 @@ public class Stores_items {
     public void setStoreId(int storeId) {
         this.storeId = storeId;
     }
+
+    public int getItemId() {
+        return itemId;
+    }
+
+    public int getStoreId() {
+        return storeId;
+    }
 }

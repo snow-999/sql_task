@@ -73,27 +73,48 @@ public class DatBaseManager<T> {
         int totalRecords = getTotalRecords();
 
         int totalPages = (int) Math.ceil((double) totalRecords / limit);
+        List<T> resultList = new ArrayList<>();
+        Class<?> clazz = object.getClass();
+        String tableName = clazz.getSimpleName().toLowerCase();
+        Field[] fields = clazz.getDeclaredFields();
+        int offset = (currentPage - 1) * limit;
 
         System.out.println("you are currently on page " + currentPage + " out of " + totalPages);
         System.out.println("total pages: " + totalPages);
-        return selectTable(object, limit, currentPage);
+        String query = "select * from "+ tableName + " limit "+ limit +" offset "+ offset +" ";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                Object resultObj = clazz.getDeclaredConstructor().newInstance();
+                for (Field field : fields) {
+                    field.setAccessible(true);
+                    Object fieldValue = resultSet.getObject(field.getName());
+                    field.set(resultObj, fieldValue);
+                }
+                resultList.add((T) resultObj);
+            }
+        }
+        return resultList;
     }
 
     public String search(String tableName, int limit, int currentPage) {
         Scanner scan = new Scanner(System.in);
-        String column = scan.nextLine();
-        System.out.println("enter the value");
-        String value = scan.nextLine();
+        String column = scan.nextLine().toLowerCase();
         int offset = (currentPage - 1) * limit;
+        if (!column.equals("all")) {
+            System.out.println("enter the value");
+            String value = scan.nextLine();
 
-        String sql = "SELECT * FROM " + tableName +
-                " where " + column + " = " + value +
-                " limit "+ limit +" offset "+ offset +" ";
-        return sql;
+            String sql = "SELECT * FROM " + tableName +
+                    " where " + column + " = " + value +
+                    " limit " + limit +" offset "+ offset + " ";
+            return sql;
+        } else {
+            return "select * from "+ tableName + " limit "+ limit +" offset "+ offset +" ";
+        }
     }
 
     public List<T> selectTable(T obj, int limit, int currentPage) throws SQLException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-        int offset = (currentPage - 1) * limit;
         List<T> resultList = new ArrayList<>();
         Class<?> clazz = obj.getClass();
 
@@ -106,6 +127,7 @@ public class DatBaseManager<T> {
         for (Field field: fields) {
             System.out.print(field.getName()+" ");
         }
+        System.out.println("Or All");
         String query = search(tableName, limit, currentPage);
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             ResultSet resultSet = preparedStatement.executeQuery();
