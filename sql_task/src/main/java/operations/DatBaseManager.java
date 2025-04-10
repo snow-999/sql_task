@@ -25,8 +25,6 @@ public class DatBaseManager<T> {
         }
     }
 
-// field is tables fieldName gets table columns
-
     public void insertIntoTable(T object) throws SQLException, IllegalAccessException {
 
         Class<?> clazz = object.getClass();
@@ -50,40 +48,44 @@ public class DatBaseManager<T> {
         if (!columns.isEmpty()) columns.setLength(columns.length() - 2);
         if (!values.isEmpty()) values.setLength(values.length() - 2);
 
-
-
         String insertQuery = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
             for (int i = 0; i < valueList.size(); i++) {
                 preparedStatement.setObject(i + 1, valueList.get(i));
             }
             preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            updateTable(object);
         }
     }
 
-    public void insertBy(String tableName) {
-        Scanner scan = new Scanner(System.in);
-        String ans = scan.next().toLowerCase();
-        Shop shop = new Shop();
-        if (ans.equals("id")) {
-            System.out.println("Shop Id: ");
-            int shopId = scan.nextInt();
-            shop.setStoreId(shopId);
-            shop.setStoreName("");
-            System.out.println("You Have Inserted " + shopId + " As Id");
-        } else if (ans.equals("shopname")) {
-            System.out.println("Shop Name: ");
-            String shopName = scan.next();
-            shop.setStoreName(shopName);
-            System.out.println("You Have Inserted " + shopName + " As Shop Name");
-        } else {
-            System.out.println("Shop Id: ");
-            int shopId = scan.nextInt();
-            System.out.println("Shop Name: ");
-            String shopName = scan.next();
-            shop.setStoreId(shopId);
-            shop.setStoreName(shopName);
-            System.out.println("You Have Inserted " + shopName + " As Shop Name And It's Id is " + shopId);
+    public void updateTable(T object) throws IllegalAccessException, SQLException {
+        Class<?> objectClass = object.getClass();
+        String tableName = objectClass.getSimpleName().toLowerCase();
+        Field[] fields = objectClass.getDeclaredFields();
+
+        List<String> columns = new ArrayList<>();
+
+        Object value = null;
+        for (Field field : fields) {
+            field.setAccessible(true);
+             value = field.get(object);
+            if (value != null) {
+                columns.add(field.getName());
+            }
+        }
+
+        String insertQuery;
+
+        for (String col : columns) {
+             insertQuery = "update " + tableName +
+                    " set " + col + " = ?";
+            System.out.println(insertQuery);
+            System.out.println(value);
+             try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+                 preparedStatement.setObject(1, value);
+                 preparedStatement.executeUpdate();
+            }
         }
     }
 
@@ -126,22 +128,27 @@ public class DatBaseManager<T> {
         return resultList;
     }
 
-    public String search(String tableName, int limit, int currentPage) {
-        Scanner scan = new Scanner(System.in);
-        String column = scan.nextLine().toLowerCase();
+    public String search(String tableName, int limit, int currentPage) throws SQLException {
         int offset = (currentPage - 1) * limit;
-        if (!column.equals("all")) {
-            System.out.println("enter the value");
-            String value = scan.nextLine();
-            return "SELECT * FROM " + tableName +
-                    " where " + column + " = " + value +
-                    " limit " + limit +" offset "+ offset + " ";
-        } else {
+        Scanner scan = new Scanner(System.in);
+        String column = scan.nextLine();
+        System.out.println("Do you Want To Add Operations");
+        String ans = scan.next().toLowerCase();
+        if (ans.equals("yes")) {
+            if (!column.equals("all")) {
+                System.out.println("Add Your Operation");
+                String operation = scan.next();
+                return "SELECT * FROM " + tableName + " where  " + column + " " + operation+ "?" ;
+            }else {
+                return "select * from "+ tableName + " limit "+ limit +" offset "+ offset +" ";
+            }
+        }else {
             return "select * from "+ tableName + " limit "+ limit +" offset "+ offset +" ";
         }
     }
 
     public List<T> selectTable(T obj, int limit, int currentPage) throws SQLException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        Scanner scan = new Scanner(System.in);
         List<T> resultList = new ArrayList<>();
         Class<?> clazz = obj.getClass();
 
@@ -156,8 +163,13 @@ public class DatBaseManager<T> {
         }
         System.out.println("Or All");
         String query = search(tableName, limit, currentPage);
+        System.out.println("enter the value");
+        String value = scan.next();
+
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            ResultSet resultSet = preparedStatement.executeQuery();
+                preparedStatement.setString(1, value);
+
+                ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 Object resultObj = clazz.getDeclaredConstructor().newInstance();
                 for (Field field : fields) {
