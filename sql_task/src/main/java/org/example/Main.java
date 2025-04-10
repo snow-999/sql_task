@@ -107,7 +107,8 @@ public class Main {
                         switch (tableName) {
                             case TablesNames.SHOP -> {
                                 DatBaseManager<Shop> generalItemManager = new DatBaseManager<>();
-                                List<Shop> shops = generalItemManager.showPagination(shop, limit, startPage);
+                                List<Shop> shops = generalItemManager.selectTable(shop, limit, startPage);
+
                                 for (Shop shp : shops) {
                                     System.out.println("Shop Name is: "+ shp.getStoreName()+ " Shop Id is : "+ shp.getStoreId());
                                 }
@@ -115,9 +116,9 @@ public class Main {
                             }
                             case TablesNames.ITEMS -> {
                                 DatBaseManager<Items> generalItemManager = new DatBaseManager<>();
-                                List<Items> items = generalItemManager.showPagination(item, limit, startPage);
+                                List<Items> items = generalItemManager.selectTable(item, limit, startPage);
                                 for (Items itm : items) {
-                                    System.out.println("Shop Name is: "+ itm.getItemName()+ " Shop Id is : "+ itm.getItemId());
+                                    System.out.println("item Name is: "+ itm.getItemName()+ " item Id is : "+ itm.getItemId());
                                 }
                                 item.startItemsPagination(item, limit, totalPages, startPage);
                             }

@@ -1,6 +1,5 @@
 package operations;
 
-import strings.Operations;
 import strings.Queries;
 
 import java.lang.reflect.Field;
@@ -12,13 +11,19 @@ import java.util.Scanner;
 
 public class DatBaseManager<T> {
 
-    final String URL = "jdbc:mysql://localhost:3306/SHOP";
-    final String USER_NAME = "root";
-    final String PASSWORD = "1230459078150@khaled";
-    Connection connection = DriverManager.getConnection(URL, USER_NAME, PASSWORD);
+    final static String URL = "jdbc:mysql://localhost:3306/SHOP";
+    final static String USER_NAME = "root";
+    final static String PASSWORD = "1230459078150@khaled";
+    static Connection connection;
 
-    public DatBaseManager() throws SQLException {
+    static {
+        try {
+            connection = DriverManager.getConnection(URL, USER_NAME, PASSWORD);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     public void insertIntoTable(T object) throws SQLException, IllegalAccessException {
 
@@ -65,46 +70,30 @@ public class DatBaseManager<T> {
     }
 
     public List<T> showPagination(T object, int limit, int currentPage) throws SQLException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
-        int totalRecords = getTotalRecords(connection);
+        int totalRecords = getTotalRecords();
 
         int totalPages = (int) Math.ceil((double) totalRecords / limit);
 
         System.out.println("you are currently on page " + currentPage + " out of " + totalPages);
         System.out.println("total pages: " + totalPages);
-        return selectTable(connection, object, limit, currentPage);
+        return selectTable(object, limit, currentPage);
     }
 
-    public void startPagination (T object, int limit, int startPage, int totalPages) throws SQLException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
-        while (true) {
-            Scanner scan = new Scanner(System.in);
+    public String search(String tableName, int limit, int currentPage) {
+        Scanner scan = new Scanner(System.in);
+        String column = scan.nextLine();
+        System.out.println("enter the value");
+        String value = scan.nextLine();
+        int offset = (currentPage - 1) * limit;
 
-            System.out.println("go next/previous or exit");
-            String option = scan.next().toLowerCase();
-
-            if (option.equals(Operations.EXIT)) break;
-
-            switch (option) {
-                case Operations.CONTINUE -> {
-                    if (totalPages > startPage){
-                         showPagination(connection, object, limit, ++startPage);
-                    }  else {
-                        System.out.println(Operations.UNAVAILABLE);
-                    }
-                }
-                case Operations.PREVIOUS -> {
-                    if (startPage <= totalPages && startPage > 1) {
-                        showPagination(connection, object, limit, --startPage);
-                    } else {
-                        System.out.println(Operations.UNAVAILABLE);
-                    }
-                }
-            }
-        }
+        String sql = "SELECT * FROM " + tableName +
+                " where " + column + " = " + value +
+                " limit "+ limit +" offset "+ offset +" ";
+        return sql;
     }
 
-    public List<T> selectTable(T obj, int limit, int pageNumber) throws SQLException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-
-        int offset = (pageNumber - 1) * limit;
+    public List<T> selectTable(T obj, int limit, int currentPage) throws SQLException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        int offset = (currentPage - 1) * limit;
         List<T> resultList = new ArrayList<>();
         Class<?> clazz = obj.getClass();
 
@@ -112,10 +101,13 @@ public class DatBaseManager<T> {
 
         Field[] fields = clazz.getDeclaredFields();
 
-        String sql = "SELECT * FROM " + tableName +
-        " limit "+ limit +" offset "+ offset +" ";
+        System.out.print("you can select from ");
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        for (Field field: fields) {
+            System.out.print(field.getName()+" ");
+        }
+        String query = search(tableName, limit, currentPage);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 Object resultObj = clazz.getDeclaredConstructor().newInstance();
