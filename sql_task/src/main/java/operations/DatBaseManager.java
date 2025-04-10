@@ -1,6 +1,7 @@
 package operations;
 
 import strings.Queries;
+import tables.Shop;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -24,6 +25,7 @@ public class DatBaseManager<T> {
         }
     }
 
+// field is tables fieldName gets table columns
 
     public void insertIntoTable(T object) throws SQLException, IllegalAccessException {
 
@@ -38,7 +40,6 @@ public class DatBaseManager<T> {
         for (Field field : fields) {
             field.setAccessible(true);
             Object value = field.get(object);
-
             if (value != null) {
                 columns.append(field.getName()).append(", ");
                 values.append("?, ");
@@ -49,12 +50,40 @@ public class DatBaseManager<T> {
         if (!columns.isEmpty()) columns.setLength(columns.length() - 2);
         if (!values.isEmpty()) values.setLength(values.length() - 2);
 
+
+
         String insertQuery = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
             for (int i = 0; i < valueList.size(); i++) {
                 preparedStatement.setObject(i + 1, valueList.get(i));
             }
             preparedStatement.executeUpdate();
+        }
+    }
+
+    public void insertBy(String tableName) {
+        Scanner scan = new Scanner(System.in);
+        String ans = scan.next().toLowerCase();
+        Shop shop = new Shop();
+        if (ans.equals("id")) {
+            System.out.println("Shop Id: ");
+            int shopId = scan.nextInt();
+            shop.setStoreId(shopId);
+            shop.setStoreName("");
+            System.out.println("You Have Inserted " + shopId + " As Id");
+        } else if (ans.equals("shopname")) {
+            System.out.println("Shop Name: ");
+            String shopName = scan.next();
+            shop.setStoreName(shopName);
+            System.out.println("You Have Inserted " + shopName + " As Shop Name");
+        } else {
+            System.out.println("Shop Id: ");
+            int shopId = scan.nextInt();
+            System.out.println("Shop Name: ");
+            String shopName = scan.next();
+            shop.setStoreId(shopId);
+            shop.setStoreName(shopName);
+            System.out.println("You Have Inserted " + shopName + " As Shop Name And It's Id is " + shopId);
         }
     }
 
@@ -104,11 +133,9 @@ public class DatBaseManager<T> {
         if (!column.equals("all")) {
             System.out.println("enter the value");
             String value = scan.nextLine();
-
-            String sql = "SELECT * FROM " + tableName +
+            return "SELECT * FROM " + tableName +
                     " where " + column + " = " + value +
                     " limit " + limit +" offset "+ offset + " ";
-            return sql;
         } else {
             return "select * from "+ tableName + " limit "+ limit +" offset "+ offset +" ";
         }

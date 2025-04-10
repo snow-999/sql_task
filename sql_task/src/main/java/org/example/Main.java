@@ -44,10 +44,12 @@ public class Main {
                                     int shopId = scan.nextInt();
                                     shop.setStoreId(shopId);
                                     shop.setStoreName("");
+                                    System.out.println("You Have Inserted Id Which is: " + shopId);
                                 } else if (ans.equals("shopname")) {
                                     System.out.println("Shop Name: ");
                                     String shopName = scan.next();
                                     shop.setStoreName(shopName);
+                                    System.out.println("You Have Inserted Shop Name Which is: " + shopName);
                                 } else {
                                     System.out.println("Shop Id: ");
                                     int shopId = scan.nextInt();
@@ -55,6 +57,7 @@ public class Main {
                                     String shopName = scan.next();
                                     shop.setStoreId(shopId);
                                     shop.setStoreName(shopName);
+                                    System.out.println("You Have Inserted Shop Name Which is: " + shopName + " And Id Which is: " + shopId);
                                 }
                                 DatBaseManager<Shop> shopGeneralItemManager = new DatBaseManager<>();
                                 shopGeneralItemManager.insertIntoTable(shop);
@@ -67,10 +70,12 @@ public class Main {
                                     int itemId = scan.nextInt();
                                     item.setItemId(itemId);
                                     item.setItemName("");
+                                    System.out.println("You Have Inserted Id Which is: " + itemId);
                                 } else if (ans.equals("itemname")) {
                                     System.out.println("Item Name: ");
                                     String itemName = scan.next();
                                     item.setItemName(itemName);
+                                    System.out.println("You Have Inserted Item Name Which is: " + itemName);
                                 } else {
                                     System.out.println("Item Id: ");
                                     int itemId = scan.nextInt();
@@ -78,6 +83,7 @@ public class Main {
                                     String itemName = scan.next();
                                     item.setItemId(itemId);
                                     item.setItemName(itemName);
+                                    System.out.println("You Have Inserted Shop Name Which is: " + itemName + " And Id Which is: " + itemId);
                                 }
                                 DatBaseManager<Items> itemsGeneralItemManager = new DatBaseManager<>();
                                 itemsGeneralItemManager.insertIntoTable(item);
