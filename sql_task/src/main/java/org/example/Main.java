@@ -114,7 +114,6 @@ public class Main {
                             case TablesNames.SHOP -> {
                                 DatBaseManager<Shop> generalItemManager = new DatBaseManager<>();
                                 List<Shop> shops = generalItemManager.selectTable(shop, limit, startPage);
-
                                 for (Shop shp : shops) {
                                     System.out.println("Shop Name is: "+ shp.getStoreName()+ " Shop Id is : "+ shp.getStoreId());
                                 }

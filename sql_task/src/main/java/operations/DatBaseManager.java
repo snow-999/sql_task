@@ -1,7 +1,6 @@
 package operations;
 
 import strings.Queries;
-import tables.Shop;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -69,7 +68,7 @@ public class DatBaseManager<T> {
         Object value = null;
         for (Field field : fields) {
             field.setAccessible(true);
-             value = field.get(object);
+            value = field.get(object);
             if (value != null) {
                 columns.add(field.getName());
             }
@@ -78,13 +77,13 @@ public class DatBaseManager<T> {
         String insertQuery;
 
         for (String col : columns) {
-             insertQuery = "update " + tableName +
+            insertQuery = "update " + tableName +
                     " set " + col + " = ?";
             System.out.println(insertQuery);
             System.out.println(value);
-             try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
-                 preparedStatement.setObject(1, value);
-                 preparedStatement.executeUpdate();
+            try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+                preparedStatement.setObject(1, value);
+                preparedStatement.executeUpdate();
             }
         }
     }
@@ -112,7 +111,7 @@ public class DatBaseManager<T> {
 
         System.out.println("you are currently on page " + currentPage + " out of " + totalPages);
         System.out.println("total pages: " + totalPages);
-        String query = "select * from "+ tableName + " limit "+ limit +" offset "+ offset +" ";
+        String query = "select * from " + tableName + " limit " + limit + " offset " + offset + " ";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -128,23 +127,31 @@ public class DatBaseManager<T> {
         return resultList;
     }
 
-    public String search(String tableName, int limit, int currentPage) throws SQLException {
+    public ResultSet search(String tableName, int limit, int currentPage) throws SQLException {
         int offset = (currentPage - 1) * limit;
+        PreparedStatement preparedStatement;
         Scanner scan = new Scanner(System.in);
-        String column = scan.nextLine();
-        System.out.println("Do you Want To Add Operations");
-        String ans = scan.next().toLowerCase();
-        if (ans.equals("yes")) {
-            if (!column.equals("all")) {
+        String selectedColumn = scan.next();
+        if (!selectedColumn.equals("all")) {
+            System.out.println("Do you Want To Add Operations");
+            String ans = scan.next().toLowerCase();
+            if (ans.equals("yes")) {
                 System.out.println("Add Your Operation");
                 String operation = scan.next();
-                return "SELECT * FROM " + tableName + " where  " + column + " " + operation+ "?" ;
-            }else {
-                return "select * from "+ tableName + " limit "+ limit +" offset "+ offset +" ";
+                System.out.println("enter the value");
+                String value = scan.next();
+                String query = "SELECT * FROM " + tableName + " where  " + selectedColumn + " " + operation + "?";
+                preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, value);
+            } else {
+                    String query = "SELECT * FROM " + tableName;
+                    preparedStatement = connection.prepareStatement(query);
             }
-        }else {
-            return "select * from "+ tableName + " limit "+ limit +" offset "+ offset +" ";
+        } else {
+            String query = "select * from " + tableName + " limit " + limit + " offset " + offset + " ";
+             preparedStatement = connection.prepareStatement(query);
         }
+        return preparedStatement.executeQuery();
     }
 
     public List<T> selectTable(T obj, int limit, int currentPage) throws SQLException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
@@ -162,14 +169,7 @@ public class DatBaseManager<T> {
             System.out.print(field.getName()+" ");
         }
         System.out.println("Or All");
-        String query = search(tableName, limit, currentPage);
-        System.out.println("enter the value");
-        String value = scan.next();
-
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setString(1, value);
-
-                ResultSet resultSet = preparedStatement.executeQuery();
+        ResultSet resultSet = search(tableName, limit, currentPage);;
             while (resultSet.next()) {
                 Object resultObj = clazz.getDeclaredConstructor().newInstance();
                 for (Field field : fields) {
@@ -179,7 +179,6 @@ public class DatBaseManager<T> {
                 }
                 resultList.add((T) resultObj);
             }
-        }
         return resultList;
     }
 }
