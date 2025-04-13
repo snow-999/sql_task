@@ -133,20 +133,15 @@ public class DatBaseManager<T> {
         Scanner scan = new Scanner(System.in);
         String selectedColumn = scan.next();
         if (!selectedColumn.equals("all")) {
-            System.out.println("Do you Want To Add Operations");
-            String ans = scan.next().toLowerCase();
-            if (ans.equals("yes")) {
-                System.out.println("Add Your Operation");
-                String operation = scan.next();
-                System.out.println("enter the value");
-                String value = scan.next();
-                String query = "SELECT * FROM " + tableName + " where  " + selectedColumn + " " + operation + "?";
-                preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setString(1, value);
-            } else {
-                    String query = "SELECT * FROM " + tableName;
-                    preparedStatement = connection.prepareStatement(query);
-            }
+            System.out.println("Filter by: ");
+            String filterCol = scan.next();
+            System.out.println("Add Your Operation From[ >, <, =, like ]");
+            String operation = scan.next();
+            System.out.println("enter the value");
+            String value = scan.next();
+            String query = "SELECT "+ selectedColumn +" FROM " + tableName + " where  " + filterCol + " " + operation + "?";
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, value);
         } else {
             String query = "select * from " + tableName + " limit " + limit + " offset " + offset + " ";
              preparedStatement = connection.prepareStatement(query);
@@ -155,12 +150,9 @@ public class DatBaseManager<T> {
     }
 
     public List<T> selectTable(T obj, int limit, int currentPage) throws SQLException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-        Scanner scan = new Scanner(System.in);
         List<T> resultList = new ArrayList<>();
         Class<?> clazz = obj.getClass();
-
         String tableName = clazz.getSimpleName().toLowerCase();
-
         Field[] fields = clazz.getDeclaredFields();
 
         System.out.print("you can select from ");
@@ -169,7 +161,7 @@ public class DatBaseManager<T> {
             System.out.print(field.getName()+" ");
         }
         System.out.println("Or All");
-        ResultSet resultSet = search(tableName, limit, currentPage);;
+        ResultSet resultSet = search(tableName, limit, currentPage);
             while (resultSet.next()) {
                 Object resultObj = clazz.getDeclaredConstructor().newInstance();
                 for (Field field : fields) {
